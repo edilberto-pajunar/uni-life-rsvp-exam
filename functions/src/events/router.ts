@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db } from "../config/firebase-admin";
 import { Event } from "./interface";
+import { logger } from "firebase-functions";
 
 export const eventsRouter = Router();
 
@@ -13,8 +14,15 @@ eventsRouter.get("/", async (_req, res) => {
       ...doc.data(),
     }));
 
-    res.json({ success: true, data: events, message: "Events fetched successfully." });
+    res.json({
+      success: true,
+      data: events,
+      message: "Events fetched successfully.",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, data: {}, message: "Failed to fetch events." });
+    logger.error(error);
+    res
+      .status(500)
+      .json({ success: false, data: {}, message: "Failed to fetch events." });
   }
 });
