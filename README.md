@@ -202,5 +202,9 @@ distinct app IDs, names, and icons — run via
 
 ```
 
+
+To login:
+email: unilife@gmail.com
+password: unilife123
 ```
 
