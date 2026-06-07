@@ -1,33 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uni_life_rsvp_exam/core/constants/typography.dart';
 import 'package:uni_life_rsvp_exam/core/theme/app_colors.dart';
 import 'package:uni_life_rsvp_exam/core/theme/app_sizes.dart';
 import 'package:uni_life_rsvp_exam/features/auth/presentation/pages/login_page.dart';
+import 'package:uni_life_rsvp_exam/features/auth/providers/auth_provider.dart';
+import 'package:uni_life_rsvp_exam/features/home/presentation/pages/home_page.dart';
 import 'package:uni_life_rsvp_exam/presentation/atoms/app_clickable.dart';
 import 'package:uni_life_rsvp_exam/presentation/atoms/app_field.dart';
 import 'package:uni_life_rsvp_exam/presentation/atoms/app_scaffold.dart';
 
-class SignUpPage extends StatefulWidget {
+class SignUpPage extends ConsumerStatefulWidget {
   static const String routeName = 'sign-up-route';
   const SignUpPage({super.key});
 
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  ConsumerState<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _SignUpPageState extends ConsumerState<SignUpPage> {
   final _formKey = GlobalKey<FormBuilderState>();
+  bool _submitted = false;
 
   void _onSubmit() {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
-      // TODO: handle sign up
+      final fields = _formKey.currentState!.value;
+      setState(() => _submitted = true);
+      ref
+          .read(authProvider.notifier)
+          .signUp(
+            name: fields['name'] as String,
+            email: fields['email'] as String,
+            password: fields['password'] as String,
+          );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<void>>(authProvider, (_, next) {
+      if (next is AsyncError) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.error.toString())));
+        setState(() => _submitted = false);
+      }
+      if (next is AsyncData && _submitted) {
+        context.goNamed(HomePage.routeName);
+      }
+    });
+
+    final isLoading = ref.watch(authProvider) is AsyncLoading;
+
     return PopScope(
       canPop: false,
       child: AppScaffold(
@@ -90,20 +116,32 @@ class _SignUpPageState extends State<SignUpPage> {
             const SizedBox(height: AppSizes.xl),
             AppClickable(
               onPressed: _onSubmit,
+              disabled: isLoading,
               borderRadius: BorderRadius.circular(AppSizes.radiusLg),
               child: Container(
                 height: AppSizes.xxxxl,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: isLoading
+                      ? AppColors.primary.withValues(alpha: 0.7)
+                      : AppColors.primary,
                   borderRadius: BorderRadius.circular(AppSizes.radiusLg),
                 ),
-                child: Text(
-                  'Sign Up',
-                  style: AppTypography.buttonMedium.copyWith(
-                    color: AppColors.white,
-                  ),
-                ),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: AppColors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Sign Up',
+                        style: AppTypography.buttonMedium.copyWith(
+                          color: AppColors.white,
+                        ),
+                      ),
               ),
             ),
             const Spacer(),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "529863849657",
+    "project_id": "uni-life-rsvp-exam",
+    "storage_bucket": "uni-life-rsvp-exam.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:529863849657:android:de2bca0a914770acad4d68",
+        "android_client_info": {
+          "package_name": "com.example.uni_life_rsvp_exam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGvYUWFOmLTBFwtzXUROcE4yuoxA7hzz4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

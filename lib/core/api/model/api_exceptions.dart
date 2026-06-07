@@ -1,0 +1,75 @@
+import 'package:dio/dio.dart';
+
+class ApiExceptions implements Exception {
+  final String message;
+  final dynamic data;
+  final int? statusCode;
+
+  ApiExceptions(this.message, {this.data, this.statusCode});
+
+  @override
+  String toString() => message;
+
+  factory ApiExceptions.fromDioError(DioException dioError) {
+    switch (dioError.type) {
+      case DioExceptionType.connectionTimeout:
+        return ApiExceptions('Connection timeout with API server');
+      case DioExceptionType.sendTimeout:
+        return ApiExceptions('Send timeout with API server');
+      case DioExceptionType.receiveTimeout:
+        return ApiExceptions('Receive timeout with API server');
+      case DioExceptionType.badCertificate:
+        return ApiExceptions('Bad certificate');
+      case DioExceptionType.badResponse:
+        final statusCode = dioError.response?.statusCode;
+
+        if (statusCode == 413) {
+          return ApiExceptions("File too large for upload");
+        } else if (statusCode == 502) {
+          return ApiExceptions("Server is down. Please try again later.");
+        } else if (statusCode != null &&
+            statusCode >= 500 &&
+            statusCode < 600) {
+          return ApiExceptions(
+            "Server error ($statusCode). Please try again later.",
+          );
+        }
+
+        return _handleResponseError(dioError);
+      case DioExceptionType.cancel:
+        return ApiExceptions('Request to API server was cancelled');
+      case DioExceptionType.connectionError:
+        return ApiExceptions('Connection failed');
+      case DioExceptionType.unknown:
+        return ApiExceptions('Unknown error occurred');
+    }
+  }
+
+  static ApiExceptions _handleResponseError(DioException dioError) {
+    final statusCode = dioError.response?.statusCode;
+    final responseData = dioError.response?.data;
+
+    String errorMessage = 'Oops something went wrong';
+    if (responseData is Map<String, dynamic>) {
+      errorMessage =
+          (responseData['message'] as String?) ?? errorMessage;
+    }
+
+    switch (statusCode) {
+      case 400:
+      case 401:
+      case 403:
+      case 404:
+      case 409:
+        return ApiExceptions(errorMessage, statusCode: statusCode);
+      case 422:
+        return ApiExceptions(
+          errorMessage,
+          data: responseData,
+          statusCode: statusCode,
+        );
+      default:
+        return ApiExceptions(errorMessage, statusCode: statusCode);
+    }
+  }
+}

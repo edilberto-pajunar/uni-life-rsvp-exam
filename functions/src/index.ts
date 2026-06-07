@@ -11,6 +11,7 @@ import * as dotenv from "dotenv";
 import * as path from "path";
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
+import "./config/firebase-admin";
 import { setGlobalOptions } from "firebase-functions";
 import { onRequest } from "firebase-functions/https";
 import { api } from "./api";

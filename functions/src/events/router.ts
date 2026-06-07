@@ -1,22 +1,21 @@
 import { Router } from "express";
-import { db } from "../config/firebase-admin";
-import { Event } from "./interface";
 import { logger } from "firebase-functions";
+import { requiredAuth } from "../middleware/auth";
+import { eventIdRouter } from "./[eventId]/router";
+import { DUMMY_EVENTS, CURRENT_USER } from "../utils/constant";
 
 export const eventsRouter = Router();
 
-eventsRouter.get("/", async (_req, res) => {
+eventsRouter.get("/", requiredAuth, async (_req, res) => {
   try {
-    const snapshot = await db.collection("events").get();
-
-    const events: Event[] = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     res.json({
       success: true,
-      data: events,
+      data: DUMMY_EVENTS.map(({ attendees, ...rest }) => ({
+        ...rest,
+        isRsvped: (attendees ?? []).some((a) => a.id === CURRENT_USER.id),
+      })),
       message: "Events fetched successfully.",
     });
   } catch (error) {
@@ -26,3 +25,5 @@ eventsRouter.get("/", async (_req, res) => {
       .json({ success: false, data: {}, message: "Failed to fetch events." });
   }
 });
+
+eventsRouter.use("/:eventId", eventIdRouter);
