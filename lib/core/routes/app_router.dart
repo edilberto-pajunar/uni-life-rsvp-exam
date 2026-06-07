@@ -7,26 +7,26 @@ import 'package:uni_life_rsvp_exam/features/home/presentation/pages/home_page.da
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: "/",
+    initialLocation: "/login",
     routes: [
       GoRoute(
         path: '/login',
-        name: "login",
+        name: LoginPage.routeName,
         builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
         path: '/sign-up',
-        name: "signUp",
+        name: SignUpPage.routeName,
         builder: (context, state) => const SignUpPage(),
       ),
       GoRoute(
         path: '/',
-        name: "home",
+        name: HomePage.routeName,
         builder: (context, state) => const HomePage(),
       ),
       GoRoute(
         path: '/event',
-        name: "event",
+        name: EventPage.routeName,
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>;
           return EventPage(event: extra['event'] as Event);
